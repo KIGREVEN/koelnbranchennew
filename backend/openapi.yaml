@@ -1,0 +1,126 @@
+openapi: 3.0.3
+info:
+  title: Koeln Branchen API
+  version: 1.0.0
+servers:
+  - url: http://localhost:3001
+paths:
+  /api/categories:
+    get:
+      summary: List categories
+      responses:
+        '200':
+          description: OK
+  /api/categories/{slug}/listings:
+    get:
+      summary: Listings by category
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: skip
+          schema:
+            type: integer
+        - in: query
+          name: take
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+  /api/listings:
+    post:
+      summary: Create listing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateListing'
+      responses:
+        '201':
+          description: Created
+  /api/listings/{id}:
+    get:
+      summary: Get listing
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+    put:
+      summary: Update listing
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateListing'
+      responses:
+        '200':
+          description: Updated
+  /api/listings/{id}/reviews:
+    post:
+      summary: Submit review
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReview'
+      responses:
+        '201':
+          description: Created
+  /api/search/suggest:
+    get:
+      summary: Autocomplete
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+components:
+  schemas:
+    CreateListing:
+      type: object
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        categoryIds:
+          type: array
+          items:
+            type: integer
+    UpdateListing:
+      allOf:
+        - $ref: '#/components/schemas/CreateListing'
+    CreateReview:
+      type: object
+      properties:
+        rating:
+          type: integer
+        text:
+          type: string

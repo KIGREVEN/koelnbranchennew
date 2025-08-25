@@ -1,0 +1,26 @@
+{
+  "query": {
+    "bool": {
+      "must": [
+        { "term": { "categories.slug": "aerzte" } },
+        {
+          "geo_distance": {
+            "distance": "5km",
+            "location": { "lat": 50.94, "lon": 6.95 }
+          }
+        }
+      ],
+      "filter": [
+        {
+          "range": {
+            "openingHours.nowOpen": { "eq": true }
+          }
+        }
+      ]
+    }
+  },
+  "sort": [
+    { "sponsoredRank": { "order": "asc" } },
+    "_score"
+  ]
+}
