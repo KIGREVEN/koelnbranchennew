@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(USER)
+  listings     CompanyListing[] @relation("ClaimedListings")
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String
+  slug     String    @unique
+  parentId Int?
+  parent   Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryHierarchy")
+  synonyms String[]
+  listings ListingCategory[]
+}
+
+model Address {
+  id       Int    @id @default(autoincrement())
+  street   String
+  zip      String
+  city     String
+  district String?
+  lat      Float
+  lon      Float
+  listing  CompanyListing?
+}
+
+model CompanyListing {
+  id            Int       @id @default(autoincrement())
+  name          String
+  slug          String    @unique
+  description   String?
+  categories    ListingCategory[]
+  address       Address   @relation(fields: [addressId], references: [id])
+  addressId     Int
+  contacts      Json?
+  openingHours  Json?
+  plan          String?
+  sponsoredRank Int?      @default(0)
+  verified      Boolean   @default(false)
+  claimedBy     Int?
+  claimant      User?     @relation("ClaimedListings", fields: [claimedBy], references: [id])
+  reviews       Review[]
+  createdAt     DateTime  @default(now())
+}
+
+model ListingCategory {
+  listingId Int
+  categoryId Int
+  listing   CompanyListing @relation(fields: [listingId], references: [id])
+  category  Category       @relation(fields: [categoryId], references: [id])
+  @@id([listingId, categoryId])
+}
+
+model Review {
+  id        Int          @id @default(autoincrement())
+  listing   CompanyListing @relation(fields: [listingId], references: [id])
+  listingId Int
+  rating    Int
+  text      String
+  status    ReviewStatus @default(PENDING)
+  createdAt DateTime     @default(now())
+}
+
+model ProductPlan {
+  id       Int    @id @default(autoincrement())
+  name     String
+  features Json
+  price    Float
+  listings CompanyListing[]
+}
